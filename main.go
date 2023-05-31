@@ -19,6 +19,7 @@ func main() {
 	global.DB = core.Gorm()
 	if global.DB != nil {
 		db, _ := global.DB.DB()
+		core.RegisterTables()
 		defer db.Close()
 	}
 
