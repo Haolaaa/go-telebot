@@ -1,0 +1,59 @@
+# zap logger configuration
+zap:
+  level: info
+  format: console
+  prefix: "[TELEBOT]"
+  director: log
+  show-line: true
+  encode-level: LowercaseColorLevelEncoder
+  stacktrace-key: stacktrace
+  log-in-console: true
+
+# mysql connect configuration
+mysql:
+  path: "localhost"
+  port: "3306"
+  config: ""
+  db-name: "hubserver"
+  username: "root"
+  password: "haola123"
+  max-idle-conns: 10
+  max-open-conns: 100
+  log-mode: ""
+  log-zap: false
+
+local:
+  path: uploads/file
+  store-path: uploads/file
+
+excel:
+  dir: ./resource/excel/
+
+# timer task db clear table
+timer:
+  start: true
+  spec: "@daily" # 定时任务详细配置参考 https://pkg.go.dev/github.com/robfig/cron/v3
+  detail:
+    - tableName: sys_operation_records
+      compareField: created_at
+      interval: 2160h
+    - tableName: jwt_blacklists
+      compareField: created_at
+      interval: 168h
+
+bot:
+  token: 6026225894:AAHksPMok37YLUMJobEPbeoRkYPk6Itxs_Q
+  chat_id: 0
+
+canal:
+  addr: 127.0.0.1:3306
+  user: root
+  password: haola123
+  charset: utf8
+  server_id: 100
+  flavor: mysql
+  dump:
+    tables: video_release
+    table_db: hubserver
+    discard_err: true
+    skip_master_data: false
