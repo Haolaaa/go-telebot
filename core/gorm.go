@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"telebot_v2/global"
 	"telebot_v2/model"
@@ -88,7 +89,10 @@ func RegisterTables() {
 	var count int64
 	db.Model(&model.SiteVideoUrls{}).Count(&count)
 
+	fmt.Println("SiteVideoUrls count: ", count)
+
 	if count == 0 {
+		fmt.Println("count is zero: ", count)
 		db.CreateInBatches([]model.SiteVideoUrls{
 			*site1,
 			*site2,
