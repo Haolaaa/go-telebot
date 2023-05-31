@@ -10,7 +10,24 @@ import (
 )
 
 func RunServer() {
+	var err error
 	Router := Routers()
+
+	global.Bot, err = NewBot("6026225894:AAHksPMok37YLUMJobEPbeoRkYPk6Itxs_Q")
+	if err != nil {
+		global.LOG.Error("NewBot failed", zap.Error(err))
+	}
+	go global.Bot.Start()
+
+	NewKafka()
+	global.Writer = Writer()
+	Reader()
+
+	err = RunCanal(true)
+	if err != nil {
+		global.LOG.Error("Run canal failed", zap.Error(err))
+	}
+
 	s := initServer(":8082", Router)
 	time.Sleep(10 * time.Microsecond)
 	global.LOG.Info("server run success on ", zap.String("address", "8082"))

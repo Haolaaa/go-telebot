@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"net"
 	"strconv"
 	"telebot_v2/global"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
-	tele "gopkg.in/telebot.v3"
 )
 
 func NewKafka() {
@@ -64,16 +62,14 @@ const (
 )
 
 func Reader() {
-	chat := &tele.Chat{
-		ID: ChatID,
-	}
-
 	bot := global.Bot
 
-	bot.Handle("/start", services.StartHandler(bot, chat, CreateKafkaReader()))
+	bot.Handle("/start", services.StartHandler(bot, CreateKafkaReader()))
 
-	bot.Handle("/user", userHandler(bot))
-	bot.Handle("/chat", chatHandler(bot))
+	bot.Handle("/user", services.UserHandler(bot))
+	bot.Handle("/chat", services.ChatHandler(bot))
+	bot.Handle("/health", services.HealthHandler(bot))
+	// bot.Handle("/all", services.AllVideosHandler(bot))
 }
 
 func CreateKafkaReader() *kafka.Reader {
@@ -86,20 +82,4 @@ func CreateKafkaReader() *kafka.Reader {
 			MaxBytes:  10e6,
 		},
 	)
-}
-
-func userHandler(bot *tele.Bot) func(ctx tele.Context) error {
-	return func(ctx tele.Context) error {
-		text := fmt.Sprintf("user: %v", ctx.Sender().ID)
-		_, err := bot.Send(ctx.Chat(), text)
-		return err
-	}
-}
-
-func chatHandler(bot *tele.Bot) func(ctx tele.Context) error {
-	return func(ctx tele.Context) error {
-		text := fmt.Sprintf("chat: %v", ctx.Chat().ID)
-		_, err := bot.Send(ctx.Chat(), text)
-		return err
-	}
 }
