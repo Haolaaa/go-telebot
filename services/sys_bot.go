@@ -154,7 +154,7 @@ func AllVideosHandler(bot *tele.Bot) func(ctx tele.Context) error {
 
 			releasedVideos, err = filterReleasedVideo(videos)
 			if err != nil {
-				global.LOG.Error("GetVideos failed", zap.Error(err))
+				global.LOG.Error("filter videos failed", zap.Error(err))
 				errChan <- err
 				return
 			}
@@ -164,14 +164,22 @@ func AllVideosHandler(bot *tele.Bot) func(ctx tele.Context) error {
 
 			var msg tele.Editable
 			msg, err = bot.Send(ctx.Chat(), pinMsg)
+			if err != nil {
+				global.LOG.Error("send message failed", zap.Error(err))
+				errChan <- err
+			}
 
 			err = bot.Pin(msg)
+			if err != nil {
+				global.LOG.Error("pin message failed", zap.Error(err))
+				errChan <- err
+			}
 
 			for _, releasedVideo := range releasedVideos {
 
 				messageBytes, err := json.Marshal(releasedVideo)
 				if err != nil {
-					global.LOG.Error("GetVideos failed", zap.Error(err))
+					global.LOG.Error("decode message failed", zap.Error(err))
 					errChan <- err
 					return
 				}
