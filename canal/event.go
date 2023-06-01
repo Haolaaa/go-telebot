@@ -103,7 +103,7 @@ func TableEventDispatcher(event *canal.RowsEvent, row map[string]interface{}) {
 					return
 				}
 
-				fmt.Println(string(messageBytes))
+				fmt.Println(message.PublishedSiteName)
 
 				err = global.Writer.WriteMessages(
 					context.Background(),

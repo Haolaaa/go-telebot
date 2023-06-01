@@ -1,7 +1,6 @@
 package system_api
 
 import (
-	"fmt"
 	"telebot_v2/canal"
 	"telebot_v2/global"
 	"telebot_v2/model"
@@ -34,8 +33,6 @@ func (a *SysVideosApi) GetVideos(c *gin.Context) {
 			return
 		}
 	}
-
-	fmt.Println(len(releasedVideos))
 
 	response.OkWithDetailed(releasedVideos, "获取成功", c)
 }

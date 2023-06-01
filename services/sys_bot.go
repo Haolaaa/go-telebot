@@ -46,6 +46,8 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 
 		sendMessage := formatMessage(text)
 
+		log.Println(sendMessage)
+
 		_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
 			ParseMode: tele.ModeMarkdownV2,
 		})
