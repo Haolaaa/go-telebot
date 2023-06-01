@@ -9,6 +9,7 @@ type VideoReleaseMessage struct {
 	CFPlayUrl         string `json:"cf_play_url"`
 	CDNPlayUrl        string `json:"cdn_play_url"`
 	CreatedAt         string `json:"created_at"`
+	Total             int    `json:"total"`
 }
 
 type VideoReleaseKafkaMessage struct {

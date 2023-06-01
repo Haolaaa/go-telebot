@@ -14,7 +14,7 @@ var VideosService = new(SysVideosService)
 
 func (s *SysVideosService) GetVideos() (videos []model.Video, err error) {
 	now := time.Now()
-	twoDaysAgo := now.Add(-24 * time.Hour * 2)
+	twoDaysAgo := now.Add(-18 * time.Hour * 1)
 
 	err = global.DB.Table("video").Where("created_at BETWEEN ? AND ?", twoDaysAgo, now).Find(&videos).Error
 	if err != nil {

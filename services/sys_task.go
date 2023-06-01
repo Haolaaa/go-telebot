@@ -59,6 +59,7 @@ func AllVideosHandlerTaskV2() error {
 	}
 
 	for _, releasedVideo := range releasedVideos {
+		releasedVideo.Total = totalVideos
 		messageBytes, err := json.Marshal(releasedVideo)
 		if err != nil {
 			global.LOG.Error("decode message failed", zap.Error(err))
