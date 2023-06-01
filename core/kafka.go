@@ -69,7 +69,7 @@ func Reader() {
 	bot.Handle("/user", services.UserHandler(bot))
 	bot.Handle("/chat", services.ChatHandler(bot))
 	bot.Handle("/health", services.HealthHandler(bot))
-	// bot.Handle("/all", services.AllVideosHandler(bot))
+	bot.Handle("/all", services.AllVideosHandler(bot))
 }
 
 func CreateKafkaReader() *kafka.Reader {
