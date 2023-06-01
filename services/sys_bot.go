@@ -179,22 +179,6 @@ func processVideos(bot *tele.Bot, ctx tele.Context, errChan chan<- error) {
 		return
 	}
 
-	// videosCount := len(releasedVideos)
-	// pinMsg := fmt.Sprintf("📺过去48小时内共发布了 %v 个视频", videosCount)
-
-	// var msg tele.Editable
-	// msg, err = bot.Send(ctx.Chat(), pinMsg)
-	// if err != nil {
-	// 	zap.L().Error("send message failed", zap.Error(err))
-	// 	errChan <- err
-	// }
-
-	// err = bot.Pin(msg)
-	// if err != nil {
-	// 	zap.L().Error("pin message failed", zap.Error(err))
-	// 	errChan <- err
-	// }
-
 	for _, releasedVideo := range releasedVideos {
 
 		messageBytes, err := json.Marshal(releasedVideo)

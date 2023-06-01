@@ -39,7 +39,11 @@ func RunServer() {
 		}
 	})
 	if err != nil {
-		fmt.Println("Error scheduling task: ", err)
+		global.LOG.Error("AddFunc failed", zap.Error(err))
+	}
+	_, err = cron.AddFunc("0 0 * * * *", services.SystemHealth)
+	if err != nil {
+		global.LOG.Error("AddFunc failed", zap.Error(err))
 	}
 	cron.Start()
 
