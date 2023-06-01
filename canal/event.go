@@ -3,7 +3,6 @@ package canal
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"telebot_v2/global"
@@ -102,8 +101,6 @@ func TableEventDispatcher(event *canal.RowsEvent, row map[string]interface{}) {
 					logError("json.Marshal failed", err)
 					return
 				}
-
-				fmt.Println(message.PublishedSiteName)
 
 				err = global.Writer.WriteMessages(
 					context.Background(),

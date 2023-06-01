@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
 	"telebot_v2/global"
 	"telebot_v2/services"
@@ -32,7 +31,6 @@ func RunServer() {
 
 	cron := cron.New(cron.WithSeconds())
 	_, err = cron.AddFunc("0 0 */4 * * *", func() {
-		fmt.Println("AllVideosHandlerTaskV2 started")
 		err := services.AllVideosHandlerTaskV2()
 		if err != nil {
 			global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
