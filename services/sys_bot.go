@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"strings"
+	"sync"
 	"telebot_v2/canal"
 	"telebot_v2/global"
 	"telebot_v2/model"
@@ -17,9 +18,34 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+type ProcessingState struct {
+	sync.Mutex
+	isProcessing bool
+}
+
+var startProcessing = &ProcessingState{}
+var allProcessing = &ProcessingState{}
+
 func StartHandler(bot *tele.Bot, reader *kafka.Reader) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
-		go processKafkaMessages(bot, ctx.Chat(), reader)
+		startProcessing.Lock()
+		defer startProcessing.Unlock()
+
+		if startProcessing.isProcessing {
+			bot.Send(ctx.Chat(), "已经在运行了")
+			return nil
+		}
+
+		startProcessing.isProcessing = true
+		go func() {
+			defer func() {
+				startProcessing.Lock()
+				startProcessing.isProcessing = false
+				startProcessing.Unlock()
+			}()
+
+			processKafkaMessages(bot, ctx.Chat(), reader)
+		}()
 
 		return nil
 	}
@@ -101,40 +127,72 @@ func HealthHandler(bot *tele.Bot) func(ctx tele.Context) error {
 
 func AllVideosHandler(bot *tele.Bot) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
-		videos, err := VideosService.GetVideos()
-		if err != nil {
-			global.LOG.Error("GetVideos failed", zap.Error(err))
-			return err
+		allProcessing.Lock()
+		defer allProcessing.Unlock()
+
+		if allProcessing.isProcessing {
+			bot.Send(ctx.Chat(), "已经在运行了")
+			return nil
 		}
 
-		var releasedVideos []model.VideoReleaseMessage
-
-		releasedVideos, err = filterReleasedVideo(videos)
-		if err != nil {
-			global.LOG.Error("GetVideos failed", zap.Error(err))
-			return err
-		}
-
-		for _, releasedVideo := range releasedVideos {
-
-			messageBytes, err := json.Marshal(releasedVideo)
+		allProcessing.isProcessing = true
+		errChan := make(chan error, 1)
+		go func() {
+			defer func() {
+				allProcessing.Lock()
+				allProcessing.isProcessing = false
+				allProcessing.Unlock()
+			}()
+			videos, err := VideosService.GetVideos()
 			if err != nil {
 				global.LOG.Error("GetVideos failed", zap.Error(err))
-				return err
+				errChan <- err
+				return
 			}
 
-			err = global.Writer.WriteMessages(
-				context.Background(),
-				kafka.Message{
-					Topic: "video_read_all",
-					Key:   []byte("video_read_all"),
-					Value: messageBytes,
-				},
-			)
+			var releasedVideos []model.VideoReleaseMessage
 
+			releasedVideos, err = filterReleasedVideo(videos)
+			if err != nil {
+				global.LOG.Error("GetVideos failed", zap.Error(err))
+				errChan <- err
+				return
+			}
+
+			videosCount := len(releasedVideos)
+			pinMsg := fmt.Sprintf("📺当前共有 %v 个视频", videosCount)
+
+			var msg tele.Editable
+			msg, err = bot.Send(ctx.Chat(), pinMsg)
+
+			err = bot.Pin(msg)
+
+			for _, releasedVideo := range releasedVideos {
+
+				messageBytes, err := json.Marshal(releasedVideo)
+				if err != nil {
+					global.LOG.Error("GetVideos failed", zap.Error(err))
+					errChan <- err
+					return
+				}
+
+				err = global.Writer.WriteMessages(
+					context.Background(),
+					kafka.Message{
+						Topic: "video_read_all",
+						Key:   []byte("video_read_all"),
+						Value: messageBytes,
+					},
+				)
+			}
+		}()
+
+		select {
+		case err := <-errChan:
+			return err
+		default:
+			return nil
 		}
-
-		return err
 	}
 }
 
