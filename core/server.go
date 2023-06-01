@@ -1,11 +1,14 @@
 package core
 
 import (
+	"fmt"
 	"net/http"
 	"telebot_v2/global"
+	"telebot_v2/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )
 
@@ -19,9 +22,26 @@ func RunServer() {
 	}
 	go global.Bot.Start()
 
-	NewKafka()
-	global.Writer = Writer()
-	Reader()
+	kafka, err := NewKafkaService()
+	if err != nil {
+		global.LOG.Error("NewKafkaService failed", zap.Error(err))
+	}
+
+	global.Writer = kafka.Writer
+	kafka.Reader()
+
+	cron := cron.New(cron.WithSeconds())
+	_, err = cron.AddFunc("0 0 */4 * * *", func() {
+		fmt.Println("AllVideosHandlerTaskV2 started")
+		err := services.AllVideosHandlerTaskV2()
+		if err != nil {
+			global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
+		}
+	})
+	if err != nil {
+		fmt.Println("Error scheduling task: ", err)
+	}
+	cron.Start()
 
 	err = RunCanal(true)
 	if err != nil {
@@ -29,7 +49,6 @@ func RunServer() {
 	}
 
 	s := initServer(":8082", Router)
-	time.Sleep(10 * time.Microsecond)
 	global.LOG.Info("server run success on ", zap.String("address", "8082"))
 
 	global.LOG.Error(s.ListenAndServe().Error())

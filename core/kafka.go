@@ -8,28 +8,29 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
-	"go.uber.org/zap"
 )
 
-func NewKafka() {
+type KafkaService struct {
+	Writer *kafka.Writer
+}
+
+func NewKafkaService() (*KafkaService, error) {
 	topic := "video_release"
 	conn, err := kafka.Dial("tcp", "localhost:9092")
 	if err != nil {
-		global.LOG.Error("Kafka dial failed", zap.Error(err))
+		return nil, err
 	}
-
 	defer conn.Close()
 
 	controller, err := conn.Controller()
 	if err != nil {
-		global.LOG.Error("Kafka get controller failed", zap.Error(err))
-	}
-	var controllerConn *kafka.Conn
-	controllerConn, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
-	if err != nil {
-		global.LOG.Error("Kafka dial failed", zap.Error(err))
+		return nil, err
 	}
 
+	controllerConn, err := kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+	if err != nil {
+		return nil, err
+	}
 	defer controllerConn.Close()
 
 	topicConfigs := []kafka.TopicConfig{
@@ -42,15 +43,17 @@ func NewKafka() {
 
 	err = controllerConn.CreateTopics(topicConfigs...)
 	if err != nil {
-		global.LOG.Error("Kafka create topic failed", zap.Error(err))
+		return nil, err
 	}
-}
 
-func Writer() *kafka.Writer {
-	return &kafka.Writer{
+	writer := &kafka.Writer{
 		Addr:     kafka.TCP("localhost:9092"),
 		Balancer: &kafka.LeastBytes{},
 	}
+
+	return &KafkaService{
+		Writer: writer,
+	}, nil
 }
 
 const (
@@ -61,18 +64,18 @@ const (
 	KafkaReadTimeout = 10 * time.Second
 )
 
-func Reader() {
+func (ks *KafkaService) Reader() {
 	bot := global.Bot
 
-	bot.Handle("/start", services.StartHandler(bot, CreateKafkaReader()))
+	bot.Handle("/start", services.StartHandler(bot, ks.CreateKafkaReader()))
+	bot.Handle("/all", services.AllVideosHandler(bot))
+	bot.Handle("/health", services.HealthHandler(bot))
 
 	bot.Handle("/user", services.UserHandler(bot))
 	bot.Handle("/chat", services.ChatHandler(bot))
-	bot.Handle("/health", services.HealthHandler(bot))
-	bot.Handle("/all", services.AllVideosHandler(bot))
 }
 
-func CreateKafkaReader() *kafka.Reader {
+func (ks *KafkaService) CreateKafkaReader() *kafka.Reader {
 	return kafka.NewReader(
 		kafka.ReaderConfig{
 			Brokers:   []string{KafkaBroker},
