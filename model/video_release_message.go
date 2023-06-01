@@ -13,6 +13,8 @@ type VideoReleaseMessage struct {
 
 type VideoReleaseKafkaMessage struct {
 	TaskName string `json:"task_name"`
+	Total    int    `json:"total"`
+	ErrCount int    `json:"err_count"`
 	VideoReleaseMessage
 	VideoReleaseStatus
 }

@@ -24,6 +24,7 @@ type ProcessingState struct {
 
 var startProcessing = &ProcessingState{}
 var allProcessing = &ProcessingState{}
+var totalVideos int
 
 func StartHandler(bot *tele.Bot, reader *kafka.Reader) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
@@ -77,6 +78,15 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 		}
 
 		sendMessage := formatMessage(text)
+
+		if text.Total == totalVideos && text.ErrCount == 0 {
+			sendMessage = fmt.Sprintf("过去48个小时发布了%v个视频，所有M3U8链接正常", totalVideos)
+			_, err = bot.Send(chat, sendMessage)
+			if err != nil {
+				global.LOG.Error("error while sending message", zap.Error(err))
+				continue
+			}
+		}
 
 		_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
 			ParseMode: tele.ModeMarkdownV2,
@@ -175,6 +185,8 @@ func processVideos(bot *tele.Bot, ctx tele.Context, errChan chan<- error) {
 		errChan <- err
 		return
 	}
+
+	totalVideos = len(releasedVideos)
 
 	for _, releasedVideo := range releasedVideos {
 
