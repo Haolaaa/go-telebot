@@ -95,7 +95,9 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 				continue
 			}
 		} else {
-			_, err = bot.Send(chat, sendMessage)
+			_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
+				ParseMode: tele.ModeMarkdownV2,
+			})
 			if err != nil {
 				global.LOG.Error("error while sending message", zap.Error(err))
 				continue
@@ -109,7 +111,7 @@ func formatMessage(text model.VideoReleaseKafkaMessage) string {
 	text.CreatedAt = strings.Replace(text.CreatedAt, "T", " ", 1)
 	text.CreatedAt = strings.Split(text.CreatedAt, "+")[0]
 
-	sendText := "***任务名称***: ``%s`` \n**发布站点**: `%v`\n**视频标题**: `%v`\n**视频ID**: `%v`\n**播放链接**: `%v`\n**直连状态**: %v\n**直连地址**: %v\n**CDN状态**: %v\n**CDN地址**: %v\n**CF状态**: %v\n**CF地址**: %v\n**上传时间**: %v\n @a_lan23"
+	sendText := "***任务名称***: ``%s`` \n**发布站点**: `%v`\n**视频标题**: `%v`\n**视频ID**: `%v`\n**播放链接**: `%v`\n**直连状态**: %v\n**直连地址**: %v\n**CDN状态**: %v\n**CDN地址**: %v\n**CF状态**: %v\n**CF地址**: %v\n**上传时间**: %v\n @a\\_lan23"
 
 	sendMessage := fmt.Sprintf(sendText, text.TaskName, text.PublishedSiteName, text.Title, text.VideoId, text.PlayUrl, text.DirectPlayUrlStatus, text.DirectPlayUrl, text.CDNPlayUrlStatus, text.CDNPlayUrl, text.DirectPlayUrlStatus, text.CFPlayUrl, text.CreatedAt)
 
