@@ -24,10 +24,11 @@ type ProcessingState struct {
 	isProcessing bool
 }
 
-var startProcessing = &ProcessingState{}
-var allProcessing = &ProcessingState{}
-var totalVideos int
-var testID cron.EntryID
+var (
+	startProcessing = &ProcessingState{}
+	allProcessing   = &ProcessingState{}
+	totalVideos     int
+)
 
 func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
@@ -49,24 +50,10 @@ func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
 			global.LOG.Error("AddFunc failed", zap.Error(err))
 		}
 
-		testID, err = cron.AddFunc("@every 10s", func() {
-			bot.Send(ctx.Chat(), "test")
-		})
-
 		cron.Start()
 
 		bot.Send(ctx.Chat(), "启动成功")
 
-		return nil
-	}
-}
-
-func StopHandler(bot *tele.Bot) func(ctx tele.Context) error {
-	return func(ctx tele.Context) error {
-		bot.Send(ctx.Chat(), "正在停止。。。")
-		cron := cron.New(cron.WithSeconds())
-		cron.Remove(testID)
-		bot.Send(ctx.Chat(), "停止成功")
 		return nil
 	}
 }

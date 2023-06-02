@@ -70,7 +70,6 @@ func (ks *KafkaService) Reader() {
 	bot.Handle("/start", services.StartHandler(bot, ks.CreateKafkaReader()))
 	bot.Handle("/task", services.RunHandler(bot))
 
-	bot.Handle("/stopTest", services.StopHandler(bot))
 	bot.Handle("/test", services.AllVideosHandler(bot))
 
 	bot.Handle("/health", services.HealthHandler(bot))
