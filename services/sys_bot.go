@@ -109,14 +109,14 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 
 		sendMessage := formatMessage(text)
 
-		if text.Total == totalVideos && text.ErrCount == 0 {
-			sendMessage = fmt.Sprintf("过去48个小时发布了%v个视频，所有M3U8链接正常", totalVideos)
-			_, err = bot.Send(chat, sendMessage)
-			if err != nil {
-				global.LOG.Error("error while sending message", zap.Error(err))
-				continue
-			}
-		}
+		// if text.Total == totalVideos && text.ErrCount == 0 {
+		// 	sendMessage = fmt.Sprintf("过去48个小时发布了%v个视频，所有M3U8链接正常", totalVideos)
+		// 	_, err = bot.Send(chat, sendMessage)
+		// 	if err != nil {
+		// 		global.LOG.Error("error while sending message", zap.Error(err))
+		// 		continue
+		// 	}
+		// }
 
 		log.Println(totalVideos, text.Total, text.ErrCount)
 
