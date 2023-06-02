@@ -53,11 +53,6 @@ func AllVideosHandlerTaskV2() error {
 		return err
 	}
 
-	if err != nil {
-		zap.L().Error("pin message failed", zap.Error(err))
-		return err
-	}
-
 	for _, releasedVideo := range releasedVideos {
 		releasedVideo.Total = totalVideos
 		messageBytes, err := json.Marshal(releasedVideo)

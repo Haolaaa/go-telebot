@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 	"sync"
 	"telebot_v2/canal"
@@ -85,6 +86,8 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 				continue
 			}
 		}
+
+		log.Println(totalVideos, text.Total, text.ErrCount)
 
 		if text.ErrCount > 0 && text.TaskName == "周期任务" {
 			_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
@@ -196,6 +199,9 @@ func processVideos(bot *tele.Bot, ctx tele.Context, errChan chan<- error) {
 	}
 
 	totalVideos = len(releasedVideos)
+	pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", totalVideos)
+	msg, err := bot.Send(ctx.Chat(), pinMsg)
+	bot.Pin(msg)
 
 	for _, releasedVideo := range releasedVideos {
 
