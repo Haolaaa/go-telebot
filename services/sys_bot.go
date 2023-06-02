@@ -41,7 +41,7 @@ func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
 		if err != nil {
 			global.LOG.Error("AddFunc failed", zap.Error(err))
 		}
-		_, err = cron.AddFunc("0 0 * * * *", func() {
+		_, err = cron.AddFunc("*/5 * * * * *", func() {
 			SystemHealth(bot, ctx.Chat())
 		})
 		if err != nil {
