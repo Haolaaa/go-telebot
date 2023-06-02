@@ -3,11 +3,9 @@ package core
 import (
 	"net/http"
 	"telebot_v2/global"
-	"telebot_v2/services"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 )
 
@@ -28,22 +26,6 @@ func RunServer() {
 
 	global.Writer = kafka.Writer
 	kafka.Reader()
-
-	cron := cron.New(cron.WithSeconds())
-	_, err = cron.AddFunc("0 0 */4 * * *", func() {
-		err := services.AllVideosHandlerTaskV2()
-		if err != nil {
-			global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
-		}
-	})
-	if err != nil {
-		global.LOG.Error("AddFunc failed", zap.Error(err))
-	}
-	_, err = cron.AddFunc("0 0 * * * *", services.SystemHealth)
-	if err != nil {
-		global.LOG.Error("AddFunc failed", zap.Error(err))
-	}
-	cron.Start()
 
 	err = RunCanal(true)
 	if err != nil {

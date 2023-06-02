@@ -11,9 +11,10 @@ import (
 
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
+	tele "gopkg.in/telebot.v3"
 )
 
-func AllVideosHandlerTaskV2() error {
+func AllVideosHandlerTaskV2(bot *tele.Bot, chat *tele.Chat) error {
 	allProcessing.Lock()
 	defer allProcessing.Unlock()
 
@@ -45,13 +46,8 @@ func AllVideosHandlerTaskV2() error {
 
 	videosCount := len(releasedVideos)
 	pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", videosCount)
-
-	chat, err := global.Bot.ChatByID(-1001954537168)
-	_, err = global.Bot.Send(chat, pinMsg)
-	if err != nil {
-		zap.L().Error("send message failed", zap.Error(err))
-		return err
-	}
+	msg, err := bot.Send(chat, pinMsg)
+	bot.Pin(msg)
 
 	for _, releasedVideo := range releasedVideos {
 		releasedVideo.Total = totalVideos
@@ -77,11 +73,10 @@ func AllVideosHandlerTaskV2() error {
 	return err
 }
 
-func SystemHealth() {
+func SystemHealth(bot *tele.Bot, chat *tele.Chat) {
 	text := "程序状态: OK✅ "
 
-	chat, err := global.Bot.ChatByID(-1001954537168)
-	_, err = global.Bot.Send(chat, text)
+	_, err := bot.Send(chat, text)
 	if err != nil {
 		zap.L().Error("send message failed", zap.Error(err))
 		return

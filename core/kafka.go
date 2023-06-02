@@ -67,8 +67,10 @@ const (
 func (ks *KafkaService) Reader() {
 	bot := global.Bot
 
-	bot.Handle("/start", services.StartHandler(bot, ks.CreateKafkaReader()))
-	bot.Handle("/all", services.AllVideosHandler(bot))
+	bot.Handle("/run@telebot", services.StartHandler(bot, ks.CreateKafkaReader()))
+	bot.Handle("/run@task", services.RunHandler(bot))
+	bot.Handle("/run@48", services.AllVideosHandler(bot))
+
 	bot.Handle("/health", services.HealthHandler(bot))
 
 	bot.Handle("/user", services.UserHandler(bot))

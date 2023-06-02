@@ -13,6 +13,7 @@ import (
 	"telebot_v2/model"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 	tele "gopkg.in/telebot.v3"
@@ -26,6 +27,33 @@ type ProcessingState struct {
 var startProcessing = &ProcessingState{}
 var allProcessing = &ProcessingState{}
 var totalVideos int
+
+func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
+	return func(ctx tele.Context) error {
+		bot.Send(ctx.Chat(), "正在启动。。。")
+		cron := cron.New(cron.WithSeconds())
+		_, err := cron.AddFunc("0 0 */4 * * *", func() {
+			err := AllVideosHandlerTaskV2(bot, ctx.Chat())
+			if err != nil {
+				global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
+			}
+		})
+		if err != nil {
+			global.LOG.Error("AddFunc failed", zap.Error(err))
+		}
+		_, err = cron.AddFunc("0 0 * * * *", func() {
+			SystemHealth(bot, ctx.Chat())
+		})
+		if err != nil {
+			global.LOG.Error("AddFunc failed", zap.Error(err))
+		}
+		cron.Start()
+
+		bot.Send(ctx.Chat(), "启动成功")
+
+		return nil
+	}
+}
 
 func StartHandler(bot *tele.Bot, reader *kafka.Reader) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
