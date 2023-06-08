@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"telebot_v2/global"
 	"telebot_v2/model"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
@@ -82,22 +80,4 @@ func SystemHealth(bot *tele.Bot, chat *tele.Chat) {
 		return
 	}
 	return
-}
-
-func HW() {
-	// Calculate the next run time
-	nextRunTime := time.Now().Add(4 * time.Hour)
-
-	// Send a message to the Telegram chat
-	msg := fmt.Sprintf("Task completed. The next task will run at %s.", nextRunTime.Format("15:04"))
-
-	chat, err := global.Bot.ChatByID(-1001954537168)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sentMsg, err := global.Bot.Send(chat, msg)
-
-	global.Bot.UnpinAll(chat)
-	global.Bot.Pin(sentMsg)
 }

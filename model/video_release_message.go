@@ -8,6 +8,8 @@ type VideoReleaseMessage struct {
 	DirectPlayUrl     string `json:"direct_play_url"`
 	CFPlayUrl         string `json:"cf_play_url"`
 	CDNPlayUrl        string `json:"cdn_play_url"`
+	DownUrl           string `json:"down_url"`
+	CoverUrl          string `json:"cover_url"`
 	CreatedAt         string `json:"created_at"`
 	Total             int    `json:"total"`
 }

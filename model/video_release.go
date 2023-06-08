@@ -11,4 +11,6 @@ type VideoReleaseStatus struct {
 	CDNPlayUrlStatus    string `json:"cdn_play_url_status"`
 	CFPlayUrlStatus     string `json:"cf_play_url_status"`
 	DirectPlayUrlStatus string `json:"direct_play_url_status"`
+	DownUrlStatus       string `json:"down_url_status"`
+	CoverUrlStatus      string `json:"cover_url_status"`
 }

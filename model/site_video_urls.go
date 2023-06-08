@@ -1,12 +1,13 @@
 package model
 
 type SiteVideoUrls struct {
-	ID            int    `gorm:"column:id;type:int;primary_key;AUTO_INCREMENT;not null"`
-	SiteName      string `gorm:"column:site_name;type:varchar(255);not null"`
-	SiteKey       string `gorm:"column:site_key;type:varchar(255);not null"`
-	DirectPlayUrl string `gorm:"column:direct_play_url;type:varchar(255);"`
-	CFPlayUrl     string `gorm:"column:cf_play_url;type:varchar(255);"`
-	CDNPlayUrl    string `gorm:"column:cdn_play_url;type:varchar(255);"`
-	VideoCover    string `gorm:"column:video_cover;type:varchar(255);"`
-	SiteId        int    `gorm:"column:site_id;type:int;"`
+	ParentName    string `json:"parentName" gorm:"comment:父级名称"`
+	SiteName      string `json:"siteName" gorm:"comment:站点名称"`
+	SiteKey       string `json:"siteKey" gorm:"comment:站点标识"`
+	SiteID        int    `json:"siteId" gorm:"comment:站点ID"`
+	DirectPlayUrl string `json:"directPlayUrl" gorm:"comment:直连地址"`
+	CFPlayUrl     string `json:"cfPlayUrl" gorm:"comment:CF地址"`
+	CDNPlayUrl    string `json:"cdnPlayUrl" gorm:"comment:CDN地址"`
+	VideoCover    string `json:"videoCover" gorm:"comment:视频封面"`
+	DownloadUrl   string `json:"downloadUrl" gorm:"comment:下载地址"`
 }

@@ -5,5 +5,6 @@ type Video struct {
 	Title     string `gorm:"type:varchar(255);not null"`
 	Cover     string `gorm:"type:varchar(255);column:cover"`
 	PlayUrl   string `gorm:"type:varchar(255);column:play_url"`
+	DownUrl   string `gorm:"type:varchar(255);column:down_url"`
 	CreatedAt string `gorm:"type:timestamp;column:created_at"`
 }

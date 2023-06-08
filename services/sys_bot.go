@@ -28,18 +28,36 @@ var (
 	startProcessing = &ProcessingState{}
 	allProcessing   = &ProcessingState{}
 	totalVideos     int
+	allVideosTaskID *cron.EntryID = new(cron.EntryID)
 )
 
 func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
 	return func(ctx tele.Context) error {
-		bot.Send(ctx.Chat(), "正在启动。。。")
+
+		fmt.Println(*allVideosTaskID)
+		if *allVideosTaskID != 0 {
+			bot.Send(ctx.Chat(), "已经在运行了")
+			return nil
+		}
+
 		cron := cron.New(cron.WithSeconds())
-		_, err := cron.AddFunc("0 0 */4 * * *", func() {
+
+		bot.Send(ctx.Chat(), "正在启动。。。")
+		var err error
+		*allVideosTaskID, err = cron.AddFunc("0 0 */4 * * *", func() {
 			err := AllVideosHandlerTaskV2(bot, ctx.Chat())
 			if err != nil {
 				global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
 			}
 		})
+
+		// _, err = cron.AddFunc("0 0 */4 * * *", func() {
+		// 	err := AllVideosHandlerTaskV2(bot, ctx.Chat())
+		// 	if err != nil {
+		// 		global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
+		// 	}
+		// })
+
 		if err != nil {
 			global.LOG.Error("AddFunc failed", zap.Error(err))
 		}
@@ -145,9 +163,44 @@ func formatMessage(text model.VideoReleaseKafkaMessage) string {
 	text.CreatedAt = strings.Replace(text.CreatedAt, "T", " ", 1)
 	text.CreatedAt = strings.Split(text.CreatedAt, "+")[0]
 
-	sendText := "***任务名称***: ``%s`` \n**发布站点**: `%v`\n**视频标题**: `%v`\n**视频ID**: `%v`\n**播放链接**: `%v`\n**直连状态**: %v\n**直连地址**: %v\n**CDN状态**: %v\n**CDN地址**: %v\n**CF状态**: %v\n**CF地址**: %v\n**上传时间**: %v\n @a\\_lan23"
+	sendText :=
+		"***任务名称***: ``%s`` \n" +
+			"**发布站点**: `%v`\n" +
+			"**视频标题**: `%v`\n" +
+			"**视频ID**: `%v`\n" +
+			"**播放链接**: `%v`\n" +
+			"**直连状态**: %v\n" +
+			"**直连地址**: %v\n" +
+			"**CDN状态**: %v\n" +
+			"**CDN地址**: %v\n" +
+			"**CF状态**: %v\n" +
+			"**CF地址**: %v\n" +
+			"**下载地址状态**: %v\n" +
+			"**下载地址**: %v\n" +
+			"**视频封面状态**: %v\n" +
+			"**视频封面地址**: %v\n" +
+			"**上传时间**: %v\n" +
+			" @a\\_lan23"
 
-	sendMessage := fmt.Sprintf(sendText, text.TaskName, text.PublishedSiteName, text.Title, text.VideoId, text.PlayUrl, text.DirectPlayUrlStatus, text.DirectPlayUrl, text.CDNPlayUrlStatus, text.CDNPlayUrl, text.DirectPlayUrlStatus, text.CFPlayUrl, text.CreatedAt)
+	sendMessage := fmt.Sprintf(
+		sendText,
+		text.TaskName,
+		text.PublishedSiteName,
+		text.Title,
+		text.VideoId,
+		text.PlayUrl,
+		text.DirectPlayUrlStatus,
+		text.DirectPlayUrl,
+		text.CDNPlayUrlStatus,
+		text.CDNPlayUrl,
+		text.DirectPlayUrlStatus,
+		text.CFPlayUrl,
+		text.DownUrlStatus,
+		text.DownUrl,
+		text.CoverUrlStatus,
+		text.CoverUrl,
+		text.CreatedAt,
+	)
 
 	sendMessage = strings.Replace(sendMessage, "-", "\\-", -1)
 	sendMessage = strings.Replace(sendMessage, ".", "\\.", -1)

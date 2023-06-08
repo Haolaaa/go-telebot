@@ -12,6 +12,7 @@ import (
 
 var (
 	DB     *gorm.DB
+	DB2    *gorm.DB
 	VP     *viper.Viper
 	LOG    *zap.Logger
 	CONFIG config.Config

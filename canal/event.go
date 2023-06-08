@@ -1,8 +1,10 @@
 package canal
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"telebot_v2/global"
@@ -23,6 +25,16 @@ const (
 
 var httpClient = &http.Client{
 	Timeout: 15 * time.Second,
+}
+
+type Response struct {
+	Code int             `json:"code"`
+	Data json.RawMessage `json:"data"`
+	Msg  string          `json:"msg"`
+}
+
+type IntermediateResponse struct {
+	SiteConfig model.SiteVideoUrls `json:"siteConfig"`
 }
 
 func GetParseValue(event *canal.RowsEvent) (*canal.RowsEvent, map[string]interface{}) {
@@ -79,22 +91,39 @@ func TableEventDispatcher(event *canal.RowsEvent, row map[string]interface{}) {
 
 				siteVideoUrls, err := GetSitePlayUrls(int(rowModel.SiteID))
 				if err != nil {
-					logError("GetSitePlayUrls failed", err)
+					global.LOG.Error("GetSitePlayUrls failed", zap.Error(err))
+
 					return
 				}
 
 				playUrl := FormatM3u8Url(video.PlayUrl, siteVideoUrls.SiteKey)
+				downUrl := utils.FormatUrl(video.DownUrl)
+				coverUrl := utils.FormatUrl(video.Cover)
 
 				message := model.VideoReleaseMessage{
 					PublishedSiteName: siteVideoUrls.SiteName,
 					VideoId:           int(video.ID),
 					Title:             video.Title,
-					PlayUrl:           playUrl,
-					DirectPlayUrl:     siteVideoUrls.DirectPlayUrl + playUrl,
-					CFPlayUrl:         siteVideoUrls.CFPlayUrl + playUrl,
-					CDNPlayUrl:        siteVideoUrls.CDNPlayUrl + playUrl,
 					CreatedAt:         video.CreatedAt,
 				}
+
+				if siteVideoUrls.CDNPlayUrl != "" {
+					message.CDNPlayUrl = siteVideoUrls.CDNPlayUrl + playUrl
+				}
+				if siteVideoUrls.CFPlayUrl != "" {
+					message.CFPlayUrl = siteVideoUrls.CFPlayUrl + playUrl
+				}
+				if siteVideoUrls.DirectPlayUrl != "" {
+					message.DirectPlayUrl = siteVideoUrls.DirectPlayUrl + playUrl
+				}
+				if downUrl != "" {
+					message.DownUrl = downUrl
+				}
+				if coverUrl != "" {
+					message.CoverUrl = coverUrl
+				}
+
+				fmt.Println(message)
 
 				messageBytes, err := json.Marshal(message)
 				if err != nil {
@@ -147,10 +176,60 @@ func GetVideo(videoId int) (video model.Video, err error) {
 }
 
 func GetSitePlayUrls(siteId int) (sitePlayUrls model.SiteVideoUrls, err error) {
-	err = global.DB.Table("site_video_urls").Where("site_id = ?", siteId).First(&sitePlayUrls).Error
+	reqBody := map[string]interface{}{
+		"siteID":     siteId,
+		"parentName": "集团",
+	}
+
+	reqBodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
+		global.LOG.Error("json.Marshal failed", zap.Error(err))
 		return
 	}
+
+	req, err := http.NewRequest("POST", "https://3yzt.com/siteConfig/getByID", bytes.NewBuffer(reqBodyBytes))
+	if err != nil {
+		global.LOG.Error("http.NewRequest failed", zap.Error(err))
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		global.LOG.Error("httpClient.Do failed", zap.Error(err))
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("unexpected HTTP status: %v", resp.StatusCode)
+		global.LOG.Error("resp.StatusCode != http.StatusOK", zap.Error(err))
+		return
+	}
+
+	var body Response
+	err = json.NewDecoder(resp.Body).Decode(&body)
+	if err != nil {
+		global.LOG.Error("json.NewDecoder.Decode failed", zap.Error(err))
+		return
+	}
+
+	if body.Code != 0 {
+		err = fmt.Errorf("unexpected body code: %v", body.Code)
+		global.LOG.Error("body.Code != 0", zap.Error(err))
+		return
+	}
+
+	var interResp IntermediateResponse
+	err = json.Unmarshal(body.Data, &interResp)
+	if err != nil {
+		global.LOG.Error("json.Unmarshal failed", zap.Error(err))
+		return
+	}
+
+	sitePlayUrls = interResp.SiteConfig
+
 	return
 }
 
