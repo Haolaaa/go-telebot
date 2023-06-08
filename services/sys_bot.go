@@ -282,10 +282,10 @@ func processVideos(bot *tele.Bot, ctx tele.Context, errChan chan<- error) {
 		return
 	}
 
-	totalVideos = len(releasedVideos)
-	pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", totalVideos)
-	msg, err := bot.Send(ctx.Chat(), pinMsg)
-	bot.Pin(msg)
+	// totalVideos = len(releasedVideos)
+	// pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", totalVideos)
+	// msg, err := bot.Send(ctx.Chat(), pinMsg)
+	// bot.Pin(msg)
 
 	for _, releasedVideo := range releasedVideos {
 

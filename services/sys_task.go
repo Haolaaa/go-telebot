@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"telebot_v2/global"
 	"telebot_v2/model"
 
@@ -42,10 +41,10 @@ func AllVideosHandlerTaskV2(bot *tele.Bot, chat *tele.Chat) error {
 		return err
 	}
 
-	videosCount := len(releasedVideos)
-	pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", videosCount)
-	msg, err := bot.Send(chat, pinMsg)
-	bot.Pin(msg)
+	// videosCount := len(releasedVideos)
+	// pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", videosCount)
+	// msg, err := bot.Send(chat, pinMsg)
+	// bot.Pin(msg)
 
 	for _, releasedVideo := range releasedVideos {
 		releasedVideo.Total = totalVideos
