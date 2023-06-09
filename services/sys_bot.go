@@ -11,6 +11,7 @@ import (
 	"telebot_v2/canal"
 	"telebot_v2/global"
 	"telebot_v2/model"
+	"telebot_v2/utils"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -138,7 +139,7 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 
 		log.Println(totalVideos, text.Total, text.ErrCount)
 
-		if text.ErrCount > 0 && text.TaskName == "周期任务" {
+		if text.TaskName == "周期任务" {
 			_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
 				ParseMode: tele.ModeMarkdownV2,
 			})
@@ -321,7 +322,7 @@ func filterReleasedVideo(videos []model.Video) (filteredVideos []model.VideoRele
 	for _, video := range videos {
 		for _, releasedVideo := range releasedVideos {
 			if releasedVideo.Status == 1 && video.ID == uint(releasedVideo.VideoId) {
-				publishedSite, err := getPublishedSiteName(int(releasedVideo.SiteID))
+				publishedSite, err := utils.GetSitePlayUrls(int(releasedVideo.SiteID))
 				if err != nil {
 					global.LOG.Error("GetVideos failed", zap.Error(err))
 					return nil, err
@@ -341,16 +342,6 @@ func filterReleasedVideo(videos []model.Video) (filteredVideos []model.VideoRele
 				})
 			}
 		}
-	}
-
-	return
-}
-
-func getPublishedSiteName(publishedSiteId int) (publishedSite model.SiteVideoUrls, err error) {
-	err = global.DB.Where("site_id = ?", publishedSiteId).Find(&publishedSite).Error
-	if err != nil {
-		global.LOG.Error("GetVideos failed", zap.Error(err))
-		return
 	}
 
 	return
