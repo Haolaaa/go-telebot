@@ -61,11 +61,11 @@ func GetSitePlayUrls(siteId int) (sitePlayUrls model.SiteVideoUrls, err error) {
 		return
 	}
 
-	if body.Code != 0 {
-		err = fmt.Errorf("unexpected body code: %v", body.Code)
-		global.LOG.Error("body.Code != 0", zap.Error(err))
-		return
-	}
+	// if body.Code != 0 {
+	// 	err = fmt.Errorf("unexpected body code: %v", body.Code)
+	// 	global.LOG.Error("body.Code != 0", zap.Error(err))
+	// 	return
+	// }
 
 	var interResp IntermediateResponse
 	err = json.Unmarshal(body.Data, &interResp)

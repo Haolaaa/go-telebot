@@ -106,10 +106,10 @@ func TableEventDispatcher(event *canal.RowsEvent, row map[string]interface{}) {
 					message.DirectPlayUrl = siteVideoUrls.DirectPlayUrl + playUrl
 				}
 				if downUrl != "" {
-					message.DownUrl = downUrl
+					message.DownUrl = siteVideoUrls.DirectPlayUrl + downUrl
 				}
 				if coverUrl != "" {
-					message.CoverUrl = coverUrl
+					message.CoverUrl = siteVideoUrls.VideoCover + coverUrl
 				}
 
 				fmt.Println(message)

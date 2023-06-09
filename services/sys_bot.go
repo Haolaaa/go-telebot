@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"sync"
 	"telebot_v2/canal"
@@ -127,17 +126,6 @@ func processKafkaMessages(bot *tele.Bot, chat *tele.Chat, reader *kafka.Reader) 
 		}
 
 		sendMessage := formatMessage(text)
-
-		// if text.Total == totalVideos && text.ErrCount == 0 {
-		// 	sendMessage = fmt.Sprintf("过去48个小时发布了%v个视频，所有M3U8链接正常", totalVideos)
-		// 	_, err = bot.Send(chat, sendMessage)
-		// 	if err != nil {
-		// 		global.LOG.Error("error while sending message", zap.Error(err))
-		// 		continue
-		// 	}
-		// }
-
-		log.Println(totalVideos, text.Total, text.ErrCount)
 
 		if text.TaskName == "周期任务" {
 			_, err = bot.Send(chat, sendMessage, &tele.SendOptions{
@@ -283,14 +271,11 @@ func processVideos(bot *tele.Bot, ctx tele.Context, errChan chan<- error) {
 		return
 	}
 
-	// totalVideos = len(releasedVideos)
-	// pinMsg := fmt.Sprintf("正在检测过去48小时内共发布的 %v 个视频。。。", totalVideos)
-	// msg, err := bot.Send(ctx.Chat(), pinMsg)
-	// bot.Pin(msg)
-
 	for _, releasedVideo := range releasedVideos {
 
 		releasedVideo.Total = totalVideos
+
+		fmt.Println("released video: ", releasedVideo)
 
 		messageBytes, err := json.Marshal(releasedVideo)
 		if err != nil {
@@ -323,6 +308,7 @@ func filterReleasedVideo(videos []model.Video) (filteredVideos []model.VideoRele
 		for _, releasedVideo := range releasedVideos {
 			if releasedVideo.Status == 1 && video.ID == uint(releasedVideo.VideoId) {
 				publishedSite, err := utils.GetSitePlayUrls(int(releasedVideo.SiteID))
+				fmt.Println("published site: ", publishedSite)
 				if err != nil {
 					global.LOG.Error("GetVideos failed", zap.Error(err))
 					return nil, err
@@ -338,6 +324,8 @@ func filterReleasedVideo(videos []model.Video) (filteredVideos []model.VideoRele
 					DirectPlayUrl:     publishedSite.DirectPlayUrl + playUrl,
 					CFPlayUrl:         publishedSite.CFPlayUrl + playUrl,
 					CDNPlayUrl:        publishedSite.CDNPlayUrl + playUrl,
+					DownUrl:           publishedSite.DownloadUrl + video.DownUrl,
+					CoverUrl:          publishedSite.VideoCover + video.Cover,
 					CreatedAt:         video.CreatedAt,
 				})
 			}
