@@ -51,13 +51,6 @@ func RunHandler(bot *tele.Bot) func(ctx tele.Context) error {
 			}
 		})
 
-		// _, err = cron.AddFunc("0 0 */4 * * *", func() {
-		// 	err := AllVideosHandlerTaskV2(bot, ctx.Chat())
-		// 	if err != nil {
-		// 		global.LOG.Error("AllVideosHandlerTaskV2 failed", zap.Error(err))
-		// 	}
-		// })
-
 		if err != nil {
 			global.LOG.Error("AddFunc failed", zap.Error(err))
 		}
