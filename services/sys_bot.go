@@ -149,18 +149,17 @@ func formatMessage(text model.VideoReleaseKafkaMessage) string {
 		"***任务名称***: ``%s`` \n" +
 			"**发布站点**: `%v`\n" +
 			"**视频标题**: `%v`\n" +
-			"**视频ID**: `%v`\n" +
-			"**播放链接**: `%v`\n" +
-			"**直连状态**: %v\n" +
+			"**视频ID**: `%v`\n\n" +
 			"**直连地址**: %v\n" +
-			"**CDN状态**: %v\n" +
+			"**直连状态**: %v\n\n" +
 			"**CDN地址**: %v\n" +
-			"**CF状态**: %v\n" +
+			"**CDN状态**: %v\n\n" +
 			"**CF地址**: %v\n" +
-			"**下载地址状态**: %v\n" +
+			"**CF状态**: %v\n\n" +
 			"**下载地址**: %v\n" +
-			"**视频封面状态**: %v\n" +
+			"**下载地址状态**: %v\n\n" +
 			"**视频封面地址**: %v\n" +
+			"**视频封面状态**: %v\n\n" +
 			"**上传时间**: %v\n" +
 			" @a\\_lan23"
 
@@ -170,17 +169,16 @@ func formatMessage(text model.VideoReleaseKafkaMessage) string {
 		text.PublishedSiteName,
 		text.Title,
 		text.VideoId,
-		text.PlayUrl,
-		text.DirectPlayUrlStatus,
 		text.DirectPlayUrl,
-		text.CDNPlayUrlStatus,
-		text.CDNPlayUrl,
 		text.DirectPlayUrlStatus,
+		text.CDNPlayUrl,
+		text.CDNPlayUrlStatus,
 		text.CFPlayUrl,
-		text.DownUrlStatus,
+		text.DirectPlayUrlStatus,
 		text.DownUrl,
-		text.CoverUrlStatus,
+		text.DownUrlStatus,
 		text.CoverUrl,
+		text.CoverUrlStatus,
 		text.CreatedAt,
 	)
 
