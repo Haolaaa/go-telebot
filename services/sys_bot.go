@@ -174,7 +174,7 @@ func formatMessage(text model.VideoReleaseKafkaMessage) string {
 		text.CDNPlayUrl,
 		text.CDNPlayUrlStatus,
 		text.CFPlayUrl,
-		text.DirectPlayUrlStatus,
+		text.CFPlayUrlStatus,
 		text.DownUrl,
 		text.DownUrlStatus,
 		text.CoverUrl,
